@@ -37,6 +37,100 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Fruit'
+  /user:
+    post:
+      description: create a new user
+      operationId: createUser
+      consumes:
+        - application/json
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: created
+          schema:
+            type: string
+        '409':
+          description: username or email already taken by another user
+          schema:
+            type: string
+  /user/{email}:
+    get:
+      description: get user details (without password)
+      operationId: getUser
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/email'
+      responses:
+        '200':
+          description: user details (without password)
+          schema:
+            $ref: '#/definitions/UserWithoutPassword'
+        '404':
+          description: user not found or unauthorized access
+          schema:
+            type: string
+    patch:
+      description: change the user password
+      operationId: changePassword
+      produces:
+        - application/json
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+        - $ref: '#/parameters/email'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: patch was successful
+          schema:
+            type: string
+        '404':
+          description: user not found or unauthorized access
+          schema:
+            type: string
+  /login:
+    get:
+      description: get a jwt authorization token
+      operationId: getJwt
+      produces:
+        - application/json
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: jwt authorization token
+          schema:
+            type: string
+        '401':
+          description: user does not exist or wrong password
+          schema:
+            type: string
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+parameters:
+  email:
+    name: email
+    description: email of a user
+    in: path
+    type: string
+    required: true
 definitions:
   Fruit:
     type: object
@@ -48,4 +142,20 @@ definitions:
       size:
         type: string
       weight:
+        type: string
+  User:
+    type: object
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+  UserWithoutPassword:
+    type: object
+    properties:
+      email:
+        type: string
+      username:
         type: string
