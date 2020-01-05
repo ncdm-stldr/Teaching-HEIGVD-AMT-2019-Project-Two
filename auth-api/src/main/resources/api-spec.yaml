@@ -54,8 +54,12 @@ paths:
           description: created
           schema:
             type: string
+        '404':
+          description: bad request, malformed request
+          schema:
+            type: string
         '409':
-          description: username or email already taken by another user
+          description: conflict, username or email already taken by another user
           schema:
             type: string
   /user/{email}:
@@ -99,11 +103,11 @@ paths:
           schema:
             type: string
   /login:
-    get:
+    post:
       description: get a jwt authorization token
       operationId: getJwt
       produces:
-        - application/json
+        - text/html; charset=utf-8
       parameters:
         - name: user
           in: body
