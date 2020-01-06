@@ -1,20 +1,20 @@
 package ch.heigvd.amt.project_two.auth.api.endpoints;
 
-import ch.heigvd.amt.project_two.auth.api.ApiUtil;
 import ch.heigvd.amt.project_two.auth.api.UserApi;
 import ch.heigvd.amt.project_two.auth.api.model.User;
 import ch.heigvd.amt.project_two.auth.api.model.UserWithoutPassword;
+import ch.heigvd.amt.project_two.auth.api.util.JWTUtils;
 import ch.heigvd.amt.project_two.auth.entities.UserEntity;
 import ch.heigvd.amt.project_two.auth.repositories.UserRepository;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -25,10 +25,29 @@ public class UserApiController implements UserApi {
     @Autowired
     UserRepository userRepository;
 
-    @Override
-    public ResponseEntity<String> changePassword(@ApiParam(value = "email of a user",required=true) @PathVariable("email") String email, @ApiParam(value = "" ,required=true )  @Valid @RequestBody User user) {
+    @Autowired
+    private HttpServletRequest request;
 
-        //TODO implement a filter to verify jwt token
+    @Override
+    public ResponseEntity<String> changePassword(@ApiParam(value = "" ,required=true )  @Valid @RequestBody User user) {
+
+        //verify presence of authorization header in http request
+        String bearerJWT = request.getHeader("Authorization");
+        if(bearerJWT == null) {
+            return new ResponseEntity<>("Missing http header: Authorization: Bearer <jwt_token>",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        //verify that user is valid
+        String problem = detectFormatProblemInUser(user);
+        if(problem != null) {
+            return new ResponseEntity<>("user is malformed", HttpStatus.BAD_REQUEST);
+        }
+
+        //verify that request has authorization to change user password
+        if(!JWTUtils.verifyToken(bearerJWT, user.getEmail())){
+            return new ResponseEntity<>("user not found or unauthorized access", HttpStatus.NOT_FOUND);
+        }
 
         //retrieve the user whose password has to be changed
         Optional<UserEntity> oUE = userRepository.findById(user.getEmail());
@@ -39,28 +58,52 @@ public class UserApiController implements UserApi {
             userRepository.save(uE);
             return new ResponseEntity<>("password changed successfully", HttpStatus.OK);
         } else {
-            // the user does not exist or jwt token is incorrect
-            return new ResponseEntity<>("user not found or unauthorized access", HttpStatus.UNAUTHORIZED);
+            //the user does not exist
+            return new ResponseEntity<>("user not found or unauthorized access", HttpStatus.NOT_FOUND);
         }
     }
 
     @Override
     public ResponseEntity<String> createUser(@ApiParam(value = "" ,required=true )  @Valid @RequestBody User user) {
-        String problem = detectProblemInUser(user);
+        // Ensure the request is not malformed (missing fields in user object)
+        String problem = detectFormatProblemInUser(user);
         if(problem != null) {
             return new ResponseEntity<>(problem, HttpStatus.BAD_REQUEST);
         }
+        // Used to prevent bruteforce listing of existing emails
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // Ensure the email is not already taken by another user
+        if(userRepository.findById(user.getEmail()).isPresent()) {
+            return new ResponseEntity<>("The email address is already taken", HttpStatus.CONFLICT);
+        }
+        // We can store the new user in the database
         userRepository.save(userToUserEntity(user));
         return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<UserWithoutPassword> getUser(@ApiParam(value = "email of a user",required=true) @PathVariable("email") String email) {
+        //verify presence of authorization header in http request
+        String bearerJWT = request.getHeader("Authorization");
+        if(bearerJWT == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //verify that request has authorization to see the user details
+        if(!JWTUtils.verifyToken(bearerJWT, email)){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //return user details if he exists
         Optional<UserEntity> uE = userRepository.findById(email);
         if(uE.isPresent()) {
             return new ResponseEntity<>(UserEntityToUserWithoutPassword(uE.get()) ,HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }
@@ -87,7 +130,7 @@ public class UserApiController implements UserApi {
         return uWP;
     }
 
-    String detectProblemInUser(User u) {
+    String detectFormatProblemInUser(User u) {
         final Pattern pattern = Pattern.compile("([a-z0-9][-a-z0-9_\\+\\.]*[a-z0-9])@([a-z0-9][-a-z0-9\\.]*[a-z0-9]\\" +
                 ".(arpa|root|aero|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|" +
                 "ac|ad|ae|af|ag|ai|al|am|" +
@@ -107,8 +150,6 @@ public class UserApiController implements UserApi {
         if( u.getPassword() == null || u.getUsername()==null ) {
             return "Missing username or/and password";
         }
-
-        //TODO check if username is already taken and maybe if password is in valid format
 
         // no problem has been found so we return null
         return null;

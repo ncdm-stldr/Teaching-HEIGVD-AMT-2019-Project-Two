@@ -54,12 +54,34 @@ paths:
           description: created
           schema:
             type: string
-        '404':
-          description: bad request, malformed request
+        '400':
+          description: malformed request
           schema:
             type: string
         '409':
           description: conflict, username or email already taken by another user
+          schema:
+            type: string
+    patch:
+      description: change the user password
+      operationId: changePassword
+      produces:
+        - text/html; charset=utf-8
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: patch was successful
+          schema:
+            type: string
+        '404':
+          description: user not found or unauthorized access
           schema:
             type: string
   /user/{email}:
@@ -70,34 +92,13 @@ paths:
         - application/json
       parameters:
         - $ref: '#/parameters/email'
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: user details (without password)
           schema:
             $ref: '#/definitions/UserWithoutPassword'
-        '404':
-          description: user not found or unauthorized access
-          schema:
-            type: string
-    patch:
-      description: change the user password
-      operationId: changePassword
-      produces:
-        - application/json
-      parameters:
-        - name: user
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/User'
-        - $ref: '#/parameters/email'
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: patch was successful
-          schema:
-            type: string
         '404':
           description: user not found or unauthorized access
           schema:
@@ -119,7 +120,7 @@ paths:
           description: jwt authorization token
           schema:
             type: string
-        '401':
+        '404':
           description: user does not exist or wrong password
           schema:
             type: string
