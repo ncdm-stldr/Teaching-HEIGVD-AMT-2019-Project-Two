@@ -1,0 +1,220 @@
+swagger: '2.0'
+info:
+  version: '0.1.0'
+  title: packages API
+  description: An API used to index software packages and tag them. The tag would be used to find packages related to a desired usage (like for instance pdf parsing, vpn, etc...).
+host: localhost:8080
+basePath: /api
+schemes:
+  - http
+paths:
+  /package:
+    post:
+      description: add a new package
+      operationId: addPackage
+      consumes:
+        - application/json
+      parameters:
+        - name: package
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SoftwarePackage'
+      responses:
+        '201':
+          description: package added successfully
+          schema:
+            type: string
+        '400':
+          description: malformed request
+          schema:
+            type: string
+        '409':
+          description: conflict, package is already indexed. Please consider editing it with a put or patch request instead if needed.
+          schema:
+            type: string
+    put:
+      description: modify an existing package (obviously, you can't modify a private package that is not yours)
+      operationId: editPackage
+      consumes:
+        - application/json
+      parameters:
+        - name: package
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SoftwarePackage'
+      responses:
+        '200':
+          description: package modified successfully
+          schema:
+            type: string
+        '400':
+          description: malformed request
+          schema:
+            type: string
+        '404':
+          description: package was not found
+          schema:
+            type: string
+    get:
+      description: get an existing package
+      operationId: getPackage
+      consumes:
+        - text/html; charset=utf-8
+      parameters:
+        - name: URL
+          description: an URL
+          in: body
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: package found
+          schema:
+            $ref: '#/definitions/SoftwarePackage'
+        '400':
+          description: malformed request
+        '404':
+          description: package was not found
+  /package/{URL}/tag:
+    post:
+      description: add a tag. The tag is an association between a tag label and a package
+      operationId: addTag
+      parameters:
+        - in: body
+          name: tag_label
+          schema:
+            type: string
+          required: true
+          description: another tag label
+        - $ref: '#/parameters/URL'
+      responses:
+        '201':
+          description: tag created
+        '200':
+          description: tag already exists
+        '404':
+          description: tag label already exists
+    delete:
+      description: remove a tag. The tag is an association between a tag label and a package
+      operationId: removeTag
+      parameters:
+        - in: body
+          name: tag_label
+          schema:
+            type: string
+          required: true
+          description: another tag label
+        - $ref: '#/parameters/URL'
+      responses:
+        '200':
+          description: tag removed
+        '404':
+          description: tag to be removed was not found
+  /package/tags:
+    post:
+      description: return tags related to
+      operationId: getTags
+      responses:
+        '201':
+          description: tag created
+        '200':
+          description: tag already exists
+        '404':
+          description: tag label already exists
+  /tag_label/{tag_label}:
+    post:
+      description: create a tag label
+      operationId: createTagLabel
+      parameters:
+        - $ref: '#/parameters/tag_label'
+      responses:
+        '201':
+          description: tag label created
+        '200':
+          description: tag label already exist
+    put:
+      description: rename a tag label
+      operationId: renameTagLabel
+      parameters:
+        - $ref: '#/parameters/tag_label'
+      responses:
+        '201':
+          description: tag label renamed
+        '404':
+          description: tag label not found
+    get:
+      description: check existence of a tag label
+      operationId: doesTagLabelExist
+      parameters:
+        - $ref: '#/parameters/tag_label'
+      responses:
+        '200':
+          description: tag does exist
+        '404':
+          description: tag does not exist
+  /tag_label/{tag_label}/merge:
+    post:
+      description: add a merge between two tag labels. A merge between two tag labels means that these labels are considered equivalent or related.
+      operationId: addTagLabelsMerge
+      parameters:
+        - $ref: '#/parameters/tag_label'
+        - in: query
+          name: tag_label
+          type: string
+          description: another tag label
+      responses:
+        '201':
+          description: merge was added
+        '404':
+          description: at least one tag label was not found
+    delete:
+      description: remove a merge between two tag labels.
+      operationId: removeTagLabelsMerge
+      parameters:
+        - $ref: '#/parameters/tag_label'
+        - in: query
+          name: tag_label
+          type: string
+          required: true
+          description: another tag label
+      responses:
+        '200':
+          description: merge was removed
+        '404':
+          description: at least one tag label was not found
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+parameters:
+  tag_label:
+    name: tag_label
+    description: a name used to qualify a tag
+    in: path
+    type: string
+    required: true
+  URL:
+    name: URL
+    description: an URL in urlencoded form
+    in: path
+    type: string
+    required: true
+definitions:
+  SoftwarePackage:
+    type: object
+    properties:
+      URL:
+        type: string
+        description: used to locate the package
+      name:
+        type: string
+      description:
+        type: string
+      private:
+        type: boolean
+        default: false
+        description: whether the package is a private package and should be only visible by the user that posted it.
