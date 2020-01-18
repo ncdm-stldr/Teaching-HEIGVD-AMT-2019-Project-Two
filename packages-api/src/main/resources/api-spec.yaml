@@ -14,6 +14,8 @@ paths:
       operationId: addPackage
       consumes:
         - application/json
+      produces:
+        - text/html; charset=utf-8
       parameters:
         - name: package
           in: body
@@ -38,6 +40,8 @@ paths:
       operationId: editPackage
       consumes:
         - application/json
+      produces:
+        - text/html; charset=utf-8
       parameters:
         - name: package
           in: body
@@ -57,18 +61,17 @@ paths:
           description: package was not found
           schema:
             type: string
+
+  /package/{URL}/:
     get:
       description: get an existing package
       operationId: getPackage
       consumes:
         - text/html; charset=utf-8
+      produces:
+        - application/json
       parameters:
-        - name: URL
-          description: an URL
-          in: body
-          required: true
-          schema:
-            type: string
+        - $ref: '#/parameters/URL'
       responses:
         '200':
           description: package found
@@ -78,6 +81,7 @@ paths:
           description: malformed request
         '404':
           description: package was not found
+
   /package/{URL}/tag:
     post:
       description: add a tag. The tag is an association between a tag label and a package
@@ -140,6 +144,10 @@ paths:
       operationId: renameTagLabel
       parameters:
         - $ref: '#/parameters/tag_label'
+        - in: query
+          name: tag_label
+          type: string
+          description: the new tag label
       responses:
         '201':
           description: tag label renamed
@@ -207,7 +215,7 @@ definitions:
   SoftwarePackage:
     type: object
     properties:
-      URL:
+      url:
         type: string
         description: used to locate the package
       name:

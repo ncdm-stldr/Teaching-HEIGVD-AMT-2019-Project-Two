@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
   version: '0.1.0'
-  title: my simple api
-  description: An API to demonstrate Swagger
+  title: Fruits API
+  description: An API to demonstrate Swagger and Spring Boot
 host: localhost:8080
 basePath: /api
 schemes:
@@ -37,6 +37,105 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Fruit'
+  /user:
+    post:
+      description: create a new user
+      operationId: createUser
+      consumes:
+        - application/json
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: created
+          schema:
+            type: string
+        '400':
+          description: malformed request
+          schema:
+            type: string
+        '409':
+          description: conflict, username or email already taken by another user
+          schema:
+            type: string
+    patch:
+      description: change the user password
+      operationId: changePassword
+      produces:
+        - text/html; charset=utf-8
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: patch was successful
+          schema:
+            type: string
+        '404':
+          description: user not found or unauthorized access
+          schema:
+            type: string
+  /user/{email}:
+    get:
+      description: get user details (without password)
+      operationId: getUser
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/email'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: user details (without password)
+          schema:
+            $ref: '#/definitions/UserWithoutPassword'
+        '404':
+          description: user not found or unauthorized access
+          schema:
+            type: string
+  /login:
+    post:
+      description: get a jwt authorization token
+      operationId: getJwt
+      produces:
+        - text/html; charset=utf-8
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: jwt authorization token
+          schema:
+            type: string
+        '404':
+          description: user does not exist or wrong password
+          schema:
+            type: string
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+parameters:
+  email:
+    name: email
+    description: email of a user
+    in: path
+    type: string
+    required: true
 definitions:
   Fruit:
     type: object
@@ -46,4 +145,22 @@ definitions:
       colour:
         type: string
       size:
+        type: string
+      weight:
+        type: string
+  User:
+    type: object
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+  UserWithoutPassword:
+    type: object
+    properties:
+      email:
+        type: string
+      username:
         type: string

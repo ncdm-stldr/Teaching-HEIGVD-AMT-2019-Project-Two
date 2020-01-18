@@ -55,7 +55,6 @@ public class CreationSteps {
             lastApiException = e;
             lastStatusCode = lastApiException.getCode();
         }
-
     }
 
     @Then("^I receive a (\\d+) status code$")
