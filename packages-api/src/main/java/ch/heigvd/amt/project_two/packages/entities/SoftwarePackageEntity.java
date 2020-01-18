@@ -1,6 +1,5 @@
 package ch.heigvd.amt.project_two.packages.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class SoftwarePackageEntity implements Serializable {
     private @Id
-    String URL;
+    String id;
     private String name;
     private String description;
     private boolean _private;
@@ -31,11 +30,10 @@ public class SoftwarePackageEntity implements Serializable {
     @JoinTable(name = "tag")
     private Set<TagLabelEntity> tags;
 
-    public SoftwarePackageEntity(String URL, String name, String description, boolean _private) {
-        this.URL = URL;
+    public SoftwarePackageEntity(String id, String name, String description, boolean _private) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this._private = _private;
     }
-
 }

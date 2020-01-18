@@ -62,7 +62,7 @@ paths:
           schema:
             type: string
 
-  /package/{URL}/:
+  /package/{id}/:
     get:
       description: get an existing package
       operationId: getPackage
@@ -71,7 +71,7 @@ paths:
       produces:
         - application/json
       parameters:
-        - $ref: '#/parameters/URL'
+        - $ref: '#/parameters/id'
       responses:
         '200':
           description: package found
@@ -82,7 +82,7 @@ paths:
         '404':
           description: package was not found
 
-  /package/{URL}/tag:
+  /package/{id}/tag:
     post:
       description: add a tag. The tag is an association between a tag label and a package
       operationId: addTag
@@ -93,7 +93,7 @@ paths:
             type: string
           required: true
           description: another tag label
-        - $ref: '#/parameters/URL'
+        - $ref: '#/parameters/id'
       responses:
         '201':
           description: tag created
@@ -111,7 +111,7 @@ paths:
             type: string
           required: true
           description: another tag label
-        - $ref: '#/parameters/URL'
+        - $ref: '#/parameters/id'
       responses:
         '200':
           description: tag removed
@@ -205,9 +205,9 @@ parameters:
     in: path
     type: string
     required: true
-  URL:
-    name: URL
-    description: an URL in urlencoded form
+  id:
+    name: id
+    description: an id used to identify and eventually locate the package
     in: path
     type: string
     required: true
@@ -215,9 +215,9 @@ definitions:
   SoftwarePackage:
     type: object
     properties:
-      url:
+      id:
         type: string
-        description: used to locate the package
+        description: used to identify and eventually locate the package
       name:
         type: string
       description:
