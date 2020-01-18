@@ -65,6 +65,8 @@ paths:
     patch:
       description: change the user password
       operationId: changePassword
+      consumes:
+        - application/json
       produces:
         - text/html; charset=utf-8
       parameters:

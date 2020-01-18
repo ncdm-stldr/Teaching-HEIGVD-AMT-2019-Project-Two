@@ -46,6 +46,9 @@ public class UserTest {
     @Given("^I have a new random User payload$")
     public void i_have_a_User_payload() throws Throwable {
         user = UserHelper.getRandomUser();
+        System.out.println(user.getEmail());
+        System.out.println(user.getUsername());
+        System.out.println(user.getPassword());
     }
 
     @When("^I POST it to the /user endpoint")
@@ -55,6 +58,7 @@ public class UserTest {
             lastApiCallThrewException = false;
             lastApiException = null;
             lastStatusCode = lastApiResponse.getStatusCode();
+            System.out.println(lastStatusCode);
         } catch (ApiException e) {
             lastApiCallThrewException = true;
             lastApiResponse = null;
@@ -64,7 +68,7 @@ public class UserTest {
     }
 
     @When("^I do GET on endpoint /user/email email being the user email$")
-    public void i_do_GET_on_user_email_with_email_as(String email) throws Throwable {
+    public void i_do_GET_on_user() throws Throwable {
         try {
             lastApiResponse = api.getUserWithHttpInfo(user.getEmail());
             lastApiCallThrewException = false;
@@ -90,12 +94,14 @@ public class UserTest {
         assertEquals(uwp.getUsername(), user.getUsername());
     }
 
-    @Then("^I receive a (\\d{3}) status code$")
-    public void i_receive_a_status_code(int arg1) throws Throwable {
+    @Then("^Reply contains a (\\d{3}) status code$")
+    public void reply_contains_a_status_code(int arg1) throws Throwable {
+        System.out.println(arg1);
+        System.out.println(lastStatusCode);
         assertEquals(arg1, lastStatusCode);
     }
 
-    @When("^I POST it to the /login endpoint$")
+    @When("^I POST user to the /login endpoint$")
     public void i_POST_it_to_the_login_endpoint() throws Throwable {
         try {
             lastApiResponse = api.getJwtWithHttpInfo(user);
@@ -119,7 +125,7 @@ public class UserTest {
 
     @Then("^I do not receive a jwt token$")
     public void i_do_not_receive_a_jwt_token() throws Throwable {
-        String notjwt = (String) lastApiResponse.getData();
+        String notjwt = (String) lastApiException.getResponseBody();
         assert(!JWTUtils.looksLikeJwt(notjwt));
     }
 

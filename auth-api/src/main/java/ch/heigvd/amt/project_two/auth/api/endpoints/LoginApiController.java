@@ -35,7 +35,7 @@ public class LoginApiController implements LoginApi {
         ue.get().getPassword().equals(user.getPassword())) {
             return new ResponseEntity<>(issueTokenFor(user.getEmail()), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>("wrong password or user does not exist", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("wrong password or user does not exist", HttpStatus.NOT_FOUND);
         }
     }
 }

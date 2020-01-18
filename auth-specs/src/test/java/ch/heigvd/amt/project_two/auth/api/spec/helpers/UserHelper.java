@@ -7,6 +7,8 @@ import java.util.Random;
 
 public class UserHelper {
 
+    private final static String lowercaseAlpha = "qwertzuioplkjhgfdsayxcvbnm";
+
     public static User getRandomUser() {
         User u = new User();
         u.setEmail(getRandomAlphaString(6, 15) + '@' + getRandomAlphaString(3, 8) + ".com");
@@ -20,7 +22,9 @@ public class UserHelper {
         int diff = maxLength - minLength;
         int l = diff > 0 ? r.nextInt(maxLength - minLength) + minLength : minLength;
         byte[] array = new byte[l]; // length is bounded by 7
-        new Random().nextBytes(array);
+        for(int i = 0; i < l; ++i) {
+            array[i] = (byte) lowercaseAlpha.charAt(r.nextInt(lowercaseAlpha.length()));
+        }
         return new String(array, Charset.forName("UTF-8"));
     }
 

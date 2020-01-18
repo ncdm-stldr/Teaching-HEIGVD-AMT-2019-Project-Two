@@ -57,6 +57,7 @@ public class TagLabelController implements TagLabelApi {
 //    @Override
 //    public ResponseEntity<Void> addTagLabelsMerge(@ApiParam(value = "a name used to qualify a tag",required=true) @PathVariable("tag_label") String tagLabel) {
 //
-//
+//    }
+
 
 }
