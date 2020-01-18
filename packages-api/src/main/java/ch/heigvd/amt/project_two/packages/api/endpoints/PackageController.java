@@ -3,7 +3,9 @@ package ch.heigvd.amt.project_two.packages.api.endpoints;
 import ch.heigvd.amt.project_two.packages.api.PackageApi;
 import ch.heigvd.amt.project_two.packages.api.model.SoftwarePackage;
 import ch.heigvd.amt.project_two.packages.entities.SoftwarePackageEntity;
+import ch.heigvd.amt.project_two.packages.entities.TagLabelEntity;
 import ch.heigvd.amt.project_two.packages.repositories.SoftwarePackagesRepository;
+import ch.heigvd.amt.project_two.packages.repositories.TagLabelRepository;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import javax.validation.ConstraintValidatorFactory;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Optional;
 
 @Controller
@@ -28,6 +31,9 @@ public class PackageController implements PackageApi {
 
     @Autowired
     private SoftwarePackagesRepository softwarePackagesRepository;
+
+    @Autowired
+    private TagLabelRepository tagLabelRepository;
 
     @Override
     public ResponseEntity<String> addPackage(@ApiParam(value = "" ,required=true )  @Valid @RequestBody SoftwarePackage _package) {
@@ -73,9 +79,79 @@ public class PackageController implements PackageApi {
 
 
 
+    @Override
+    public ResponseEntity<Void> addTag(@ApiParam(value = "an id used to identify and eventually locate the package",required=true) @PathVariable("id") String id,
+                                       @ApiParam(value = "another tag label" ,required=true )  @Valid @RequestBody String tagLabel) {
+        // check if software package exists
+        Optional<SoftwarePackageEntity> ospe = softwarePackagesRepository.findById(id);
+        if(!ospe.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        // check if tag_label exists
+        Optional<TagLabelEntity> otl = tagLabelRepository.findById(tagLabel);
+        if(!otl.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        SoftwarePackageEntity spe = ospe.get();
+        TagLabelEntity tle = otl.get();
+
+        spe.getTags().add(tle);
+        softwarePackagesRepository.saveAndFlush(spe);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Void> removeTag(@ApiParam(value = "an id used to identify and eventually locate the package",required=true) @PathVariable("id") String id,@ApiParam(value = "another tag label" ,required=true )  @Valid @RequestBody String tagLabel) {
+        // check if software package exists
+        Optional<SoftwarePackageEntity> ospe = softwarePackagesRepository.findById(id);
+        if(!ospe.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        // check if tag_label exists
+        Optional<TagLabelEntity> otl = tagLabelRepository.findById(tagLabel);
+        if(!otl.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        SoftwarePackageEntity spe = ospe.get();
+        TagLabelEntity tle = otl.get();
+
+        spe.getTags().remove(tle);
+
+        softwarePackagesRepository.saveAndFlush(spe);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 
-    private static String findMalformedPackageProblem(SoftwarePackage _package) {
+    @Override
+    public ResponseEntity<String> getTags(@ApiParam(value = "an id used to identify and eventually locate the package",required=true) @PathVariable("id") String id) {
+        // check if software package exists
+        Optional<SoftwarePackageEntity> ospe = softwarePackagesRepository.findById(id);
+        if(!ospe.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        SoftwarePackageEntity spe = ospe.get();
+        StringBuilder sb = new StringBuilder();
+        Iterator<TagLabelEntity> it = spe.getTags().iterator();
+        if(it.hasNext()) sb.append(it.next().getTagLabel());
+        while(it.hasNext()) {
+            sb.append(", ").append(it.next().getTagLabel());
+        }
+
+        return new ResponseEntity<>(sb.toString(), HttpStatus.OK);
+    }
+
+
+
+
+
+        private static String findMalformedPackageProblem(SoftwarePackage _package) {
         if(_package.getId().isEmpty()) return "Invalid id";
         if(_package.getName().isEmpty()) return "Please provide a name for the package";
         return null;

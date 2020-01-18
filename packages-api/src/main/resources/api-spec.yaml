@@ -105,29 +105,33 @@ paths:
       description: remove a tag. The tag is an association between a tag label and a package
       operationId: removeTag
       parameters:
+        - $ref: '#/parameters/id'
         - in: body
           name: tag_label
           schema:
             type: string
           required: true
           description: another tag label
-        - $ref: '#/parameters/id'
       responses:
         '200':
           description: tag removed
         '404':
           description: tag to be removed was not found
-  /package/tags:
-    post:
+  /package/{id}/tags:
+    get:
       description: return tags related to
       operationId: getTags
+      produces:
+        - text/html; charset=utf-8
+      parameters:
+        - $ref: '#/parameters/id'
       responses:
-        '201':
-          description: tag created
         '200':
-          description: tag already exists
+          description: list of tags
+          schema:
+            type: string
         '404':
-          description: tag label already exists
+          description: tag not found
   /tag_label/{tag_label}:
     post:
       description: create a tag label
@@ -144,9 +148,11 @@ paths:
       operationId: renameTagLabel
       parameters:
         - $ref: '#/parameters/tag_label'
-        - in: query
-          name: tag_label
-          type: string
+        - in: body
+          name: new_tag_label
+          schema:
+            type: string
+          required: true
           description: the new tag label
       responses:
         '201':
