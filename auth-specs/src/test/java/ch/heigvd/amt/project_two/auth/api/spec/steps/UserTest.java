@@ -7,6 +7,7 @@ import ch.heigvd.amt.project_two.auth.api.dto.Fruit;
 import ch.heigvd.amt.project_two.auth.api.dto.User;
 import ch.heigvd.amt.project_two.auth.api.dto.UserWithoutPassword;
 import ch.heigvd.amt.project_two.auth.api.spec.helpers.Environment;
+import ch.heigvd.amt.project_two.auth.api.spec.helpers.JWTUtils;
 import ch.heigvd.amt.project_two.auth.api.spec.helpers.UserHelper;
 import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
@@ -111,7 +112,15 @@ public class UserTest {
 
     @Then("^I receive a jwt token$")
     public void i_receive_a_jwt_token() throws Throwable {
-        jwt = (String) lastApiResponse.getData();
+        String _jwt = (String) lastApiResponse.getData();
+        assert(JWTUtils.looksLikeJwt(_jwt));
+        jwt = _jwt;
+    }
+
+    @Then("^I do not receive a jwt token$")
+    public void i_do_not_receive_a_jwt_token() throws Throwable {
+        String notjwt = (String) lastApiResponse.getData();
+        assert(!JWTUtils.looksLikeJwt(notjwt));
     }
 
     @When("^I do PATCH on user/ endpoint with password(.+) as password$")
@@ -138,6 +147,13 @@ public class UserTest {
         user.setPassword(password);
     }
 
+    @When("^I use the last received jwt token in authorization headers of future requests$")
+    public void i_set_client_api_key_with_jwt() throws Throwable {
+        api.getApiClient().setApiKey("Bearer " + jwt);
+    }
 
-
+    @Given("^I reset authorization headers of future requests$")
+    public void i_reset_authorization_header_od_future_requests() {
+        api.getApiClient().setApiKey(null);
+    }
 }

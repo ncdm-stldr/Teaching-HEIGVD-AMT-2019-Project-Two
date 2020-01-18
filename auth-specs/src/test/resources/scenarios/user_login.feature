@@ -2,6 +2,7 @@ Feature: Creation of users
 
   Background:
     Given there is a User server
+    And I reset authorization headers of future requests
 
   Scenario: creating a new User is allowed
     Given I have a new random User payload
@@ -21,7 +22,7 @@ Feature: Creation of users
     Then I receive a 201 status code
     When I POST it to the /login endpoint
     Then I receive a jwt token
-    When I do GET on endpoint /user/email (email being the User email)
+    When I do GET on endpoint /user/email email being the user email
     Then I receive a 200 status code
     And I receive the User
 
@@ -36,8 +37,8 @@ Feature: Creation of users
     When I POST it to the /user endpoint
     And I POST it to the /login endpoint
     And I do PATCH on user/ endpoint with password1234 as password
-    And I do GET on endpoint /user/email (email being the User email)
+    And I do GET on endpoint /user/email email being the user email
     Then I receive a 404 status code
     When I set User password to password1234
-    And I do GET on endpoint /user/email (email being the User email)
+    And I do GET on endpoint /user/email email being the user email
     Then I receive a 200 status code
