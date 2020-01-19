@@ -27,7 +27,9 @@ services:
       - "traefik.http.routers.auth-api.entrypoints=web"
       # - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/auth-api"
       - "traefik.http.services.auth-api-service.loadbalancer.server.port=8080"
-
+    depends_on:
+      - auth-api-db
+      
   packages-api:
     build: ./packages-api
     container_name: "packages-api-service"
@@ -38,7 +40,8 @@ services:
       - "traefik.http.routers.packages-api.rule=PathPrefix(`/packages-api`)"
       - "traefik.http.routers.packages-api.entrypoints=web"
       - "traefik.http.services.packages-api-service.loadbalancer.server.port=8080"
-      
+    depends_on:
+      - packages-api-db
   auth-api-db:
     container_name: auth-api-db
     image: mysql
