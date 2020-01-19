@@ -38,3 +38,19 @@ services:
       - "traefik.http.routers.packages-api.rule=PathPrefix(`/packages-api`)"
       - "traefik.http.routers.packages-api.entrypoints=web"
       - "traefik.http.services.packages-api-service.loadbalancer.server.port=8080"
+      
+  auth-api-db:
+    container_name: auth-api-db
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: f5gd83diehd94erf94
+      
+  packages-api-db:
+    container_name: packages-api-db
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: f5gd83diehd94erf94

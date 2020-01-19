@@ -18,8 +18,9 @@ public class SwaggerDocumentationConfig {
 
     ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-            .title("Fruits API")
-            .description("An API to demonstrate Swagger and Spring Boot")
+            .title("packages api")
+            .description("An API used to index software packages and tag them." +
+                    " The tags could be useful to search for packages related to a specifiy usage.")
             .license("")
             .licenseUrl("http://unlicense.org")
             .termsOfServiceUrl("")
