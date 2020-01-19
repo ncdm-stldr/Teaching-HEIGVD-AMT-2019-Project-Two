@@ -1,0 +1,5 @@
+FROM maven:3.6.3-jdk-8
+COPY . /usr/src/auth-api
+WORKDIR /usr/src/auth-api
+RUN mvn clean install
+CMD ["java", "-jar", "./target/swagger-spring-1.0.0.jar"]

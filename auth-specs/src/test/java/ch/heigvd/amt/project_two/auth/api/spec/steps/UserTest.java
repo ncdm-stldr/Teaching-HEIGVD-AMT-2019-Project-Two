@@ -46,9 +46,6 @@ public class UserTest {
     @Given("^I have a new random User payload$")
     public void i_have_a_User_payload() throws Throwable {
         user = UserHelper.getRandomUser();
-        System.out.println(user.getEmail());
-        System.out.println(user.getUsername());
-        System.out.println(user.getPassword());
     }
 
     @When("^I POST it to the /user endpoint")
@@ -58,7 +55,6 @@ public class UserTest {
             lastApiCallThrewException = false;
             lastApiException = null;
             lastStatusCode = lastApiResponse.getStatusCode();
-            System.out.println(lastStatusCode);
         } catch (ApiException e) {
             lastApiCallThrewException = true;
             lastApiResponse = null;
@@ -96,8 +92,6 @@ public class UserTest {
 
     @Then("^Reply contains a (\\d{3}) status code$")
     public void reply_contains_a_status_code(int arg1) throws Throwable {
-        System.out.println(arg1);
-        System.out.println(lastStatusCode);
         assertEquals(arg1, lastStatusCode);
     }
 

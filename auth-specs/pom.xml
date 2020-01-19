@@ -14,7 +14,7 @@
     <jodatime-version>2.10.5</jodatime-version>
     <okhttp3-version>4.2.2</okhttp3-version>
     <gson-version>2.8.6</gson-version>
-    <ch.heigvd.amt.project_two.auth.server.url>http://localhost:8080/api/</ch.heigvd.amt.project_two.auth.server.url>
+    <ch.heigvd.amt.project_two.auth.server.url>http://192.168.99.100/auth-api/</ch.heigvd.amt.project_two.auth.server.url>
   </properties>
   <build>
     <testResources>

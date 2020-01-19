@@ -1,0 +1,40 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.0.0-rc3"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "9090:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  auth-api:
+    build: ./auth-api
+    container_name: "auth-api-service"
+    ports:
+      - "12345:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-api.rule=PathPrefix(`/auth-api`)"
+      - "traefik.http.routers.auth-api.entrypoints=web"
+      # - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/auth-api"
+      - "traefik.http.services.auth-api-service.loadbalancer.server.port=8080"
+
+  packages-api:
+    build: ./packages-api
+    container_name: "packages-api-service"
+    ports:
+      - "12346:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.packages-api.rule=PathPrefix(`/packages-api`)"
+      - "traefik.http.routers.packages-api.entrypoints=web"
+      - "traefik.http.services.packages-api-service.loadbalancer.server.port=8080"
